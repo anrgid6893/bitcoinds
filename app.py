@@ -29,7 +29,7 @@ def webhook():
 
         speech = "Bitcoin exchange rates:"
 
-        telegram_message = {
+        slack_message = {
             "text": speech,
             "attachments": [
                 {
@@ -63,48 +63,7 @@ def webhook():
         res = {
             "speech": speech,
             "displayText": speech,
-            "data": {"telegram": telegram_message},
-            "source": "apiai-bitcoin-webhook"
-        }
-
-    if req.get("result").get("action") == "price":
-        parameters = req.get("result").get("parameters")
-        currency = parameters.get("currency-name")
-        value = parameters.get("number")
-
-        baseurl = "https://blockchain.info/tobtc?"
-        parameter1 = urllib.urlencode({'currency': currency})
-        parameter2 = urllib.urlencode({'value': value})
-
-        amount = urllib.urlopen(baseurl + parameter1 + "&" + parameter2).read()
-
-        speech = "Value in Bitcoins"
-
-        slack_message = {
-            "text": speech,
-            "attachments": [
-                {
-                    "title": "Bitcoin",
-                    "title_link": "https://markets.blockchain.info",
-                    "color": "#36a64f",
-
-                    "fields": [
-                        {
-                            "title": "Price",
-                            "value": "Value of " + value + " " + currency + ": " + amount + " BTC",
-                            "short": "false"
-                        }
-                    ],
-
-                    "thumb_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/440px-Bitcoin.svg.png"
-                }
-            ]
-        }
-
-        res = {
-            "speech": speech,
-            "displayText": speech,
-            "data": {"telegram": telegram_message},
+            "data": {"telegram": slack_message},
             "source": "apiai-bitcoin-webhook"
         }
 
