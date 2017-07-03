@@ -39,33 +39,9 @@ def webhook():
 def processRequest(req):
     if req.get("result").get("action") != "KorbitBitcoin":
         return {}
-
     rds = requests.get("https://api.korbit.co.kr/v1/ticker")
-    yql_query = makeYqlQuery(req)
-    if yql_query is None:
-        return {}
     data = json.loads(rds.text)
-    print("Response:")
-    print(data['last'])
-    
-    res = makeWebhookResult(data["last"])
-    return res
-
-
-def makeYqlQuery(req):
-    result = req.get("result")
-    parameters = result.get("parameters")
-    cname = parameters.get("currency-name")
-    if cname is None:
-        return None
-
-    return "select * from weather.forecast where woeid in (select woeid from geo.places(1) where text='" + cname + "')"
-
-
-def makeWebhookResult(data):
-    
-    speech = "bit-coin currency is " + data + "won."
-
+    speech = "Bitcoin is " + data["last"] + "!!"
     print("Response:")
     print(speech)
 
@@ -74,8 +50,9 @@ def makeWebhookResult(data):
         "displayText": speech,
         # "data": data,
         # "contextOut": [],
-        "source": "apiai-weather-webhook-sample"
+        "source": "apiai-bitcoin-webhook-sample"
     }
+
 
 
 if __name__ == '__main__':
