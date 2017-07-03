@@ -1,14 +1,7 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-from future.standard_library import install_aliases
-install_aliases()
 
-from urllib.parse import urlparse, urlencode
-from urllib.request import urlopen, Request
-from urllib.error import HTTPError
-import requests
-
+import urllib
 import json
 import os
 
@@ -24,35 +17,101 @@ app = Flask(__name__)
 def webhook():
     req = request.get_json(silent=True, force=True)
 
-    print("Request:")
-    print(json.dumps(req, indent=4))
+    if req.get("result").get("action") == "KorbitBitcoin":
+        parameters = req.get("result").get("parameters")
+        currency_symbol = parameters.get("currency-name")
 
-    res = processRequest(req)
+        baseurl = "https://blockchain.info/de/ticker"
+        result = urllib.urlopen(baseurl).read()
+        data = json.loads(result)
+
+        query = data.get(currency_symbol)
+
+        speech = "Bitcoin exchange rates:"
+
+        telegram_message = {
+            "text": speech,
+            "attachments": [
+                {
+                    "title": "Bitcoin",
+                    "title_link": "https://markets.blockchain.info",
+                    "color": "#36a64f",
+
+                    "fields": [
+                        {
+                            "title": "Last",
+                            "value": str(query.get('last')) + " " + query.get('symbol'),
+                            "short": "false"
+                        },
+                        {
+                            "title": "Buy",
+                            "value": str(query.get('buy')) + " " + query.get('symbol'),
+                            "short": "false"
+                        },
+                        {
+                            "title": "Sell",
+                            "value": str(query.get('sell')) + " " + query.get('symbol'),
+                            "short": "false"
+                        }
+                    ],
+
+                    "thumb_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/440px-Bitcoin.svg.png"
+                }
+            ]
+        }
+
+        res = {
+            "speech": speech,
+            "displayText": speech,
+            "data": {"telegram": telegram_message},
+            "source": "apiai-bitcoin-webhook"
+        }
+
+    if req.get("result").get("action") == "price":
+        parameters = req.get("result").get("parameters")
+        currency = parameters.get("currency-name")
+        value = parameters.get("number")
+
+        baseurl = "https://blockchain.info/tobtc?"
+        parameter1 = urllib.urlencode({'currency': currency})
+        parameter2 = urllib.urlencode({'value': value})
+
+        amount = urllib.urlopen(baseurl + parameter1 + "&" + parameter2).read()
+
+        speech = "Value in Bitcoins"
+
+        slack_message = {
+            "text": speech,
+            "attachments": [
+                {
+                    "title": "Bitcoin",
+                    "title_link": "https://markets.blockchain.info",
+                    "color": "#36a64f",
+
+                    "fields": [
+                        {
+                            "title": "Price",
+                            "value": "Value of " + value + " " + currency + ": " + amount + " BTC",
+                            "short": "false"
+                        }
+                    ],
+
+                    "thumb_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/440px-Bitcoin.svg.png"
+                }
+            ]
+        }
+
+        res = {
+            "speech": speech,
+            "displayText": speech,
+            "data": {"telegram": telegram_message},
+            "source": "apiai-bitcoin-webhook"
+        }
 
     res = json.dumps(res, indent=4)
-    # print(res)
     r = make_response(res)
     r.headers['Content-Type'] = 'application/json'
     return r
-
-
-def processRequest(req):
-    if req.get("result").get("action") != "KorbitBitcoin":
-        return {}
-    rds = requests.get("https://api.korbit.co.kr/v1/ticker")
-    data = json.loads(rds.text)
-    speech = "Bitcoin is " + data["last"] + "!!"
-    print("Response:")
-    print(speech)
-
-    return {
-        "speech": speech,
-        "displayText": speech,
-        # "data": data,
-        # "contextOut": [],
-        "source": "apiai-bitcoin-webhook-sample"
-    }
-
 
 
 if __name__ == '__main__':
