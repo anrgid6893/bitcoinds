@@ -63,7 +63,7 @@ def webhook():
         res = {
             "speech": speech,
             "displayText": speech,
-            "data": {"telegram": slack_message},
+            "data": {"slack": slack_message},
             "source": "apiai-bitcoin-webhook"
         }
 
