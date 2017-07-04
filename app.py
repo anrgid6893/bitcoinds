@@ -22,7 +22,7 @@ app = Flask(__name__)
 @app.route('/webhook', methods=['POST'])
 def webhook():
     req = request.get_json(silent=True, force=True)
-    if req.get("result").get("action") != "KorbitBitcoin":
+    if req.get("result").get("action") != "bitcoinprice":
         return {}
 
     baseurl = "https://blockchain.info/de/ticker"
