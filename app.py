@@ -25,10 +25,12 @@ def webhook():
     if req.get("result").get("action") != "bitcoinprice":
         return {}
 
-    baseurl = "https://blockchain.info/de/ticker"
-    result = urlopen(baseurl).read()
-    data = json.loads(result)
-    res = data["USD"]["last"]
+    #baseurl = "https://blockchain.info/de/ticker"
+    #result = urlopen(baseurl).read()
+    #data = json.loads(result)
+    #res = data["USD"]["last"]
+    #r = makeWebhookResult(res)
+    res = 1
     r = makeWebhookResult(res)
 
     return r
