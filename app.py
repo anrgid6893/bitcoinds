@@ -47,7 +47,7 @@ def processRequest(req):
     return res
 
 
-def makeWebhookResult(,bitdata):
+def makeWebhookResult(bitdata):
 
     bitcoinprice = bitdata
     
