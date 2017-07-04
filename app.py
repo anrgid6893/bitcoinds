@@ -8,10 +8,9 @@ from urllib.parse import urlparse, urlencode
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 
+import requests
 import json
 import os
-import requests
-
 
 from flask import Flask
 from flask import request
@@ -24,25 +23,38 @@ app = Flask(__name__)
 @app.route('/webhook', methods=['POST'])
 def webhook():
     req = request.get_json(silent=True, force=True)
-    if req.get("result").get("action") != "BitcoinPrice":
-        return {}
-    
-    r = requests.get("https://api.korbit.co.kr/v1/ticker")
-    data = r.json()
-    #baseurl = "https://blockchain.info/de/ticker"
-    #result = urlopen(baseurl).read()
-    #data = json.loads(result)
-    #res = data["USD"]["last"]
-    #r = makeWebhookResult(res)
-    
-    r = makeWebhookResult(data)
 
+    print("Request:")
+    print(json.dumps(req, indent=4))
+
+    res = processRequest(req)
+
+    res = json.dumps(res, indent=4)
+    # print(res)
+    r = make_response(res)
+    r.headers['Content-Type'] = 'application/json'
     return r
 
 
-def makeWebhookResult(data):
-    speech = "Now bit coin currency is " + data.get('last') + "!"
+def processRequest(req):
+    if req.get("result").get("action") != "BitcoinPrice":
+        return {}
+    bit = requests.get("https://api.korbit.co.kr/v1/ticker")
+    bitc = bit.json()
+    bitdata = bitc.get('last')
+    
+    res = makeWebhookResult(bitdata)
+    return res
 
+
+def makeWebhookResult(,bitdata):
+
+    bitcoinprice = bitdata
+    
+    # print(json.dumps(item, indent=4))
+    
+    speech = "Today bitcoin price is " +bitcoinprice +"!"
+	
     print("Response:")
     print(speech)
 
