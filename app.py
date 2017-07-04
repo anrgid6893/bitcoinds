@@ -10,6 +10,8 @@ from urllib.error import HTTPError
 
 import json
 import os
+import requests
+
 
 from flask import Flask
 from flask import request
@@ -24,20 +26,22 @@ def webhook():
     req = request.get_json(silent=True, force=True)
     if req.get("result").get("action") != "bitcoinprice":
         return {}
-
+    
+    r = requests.get("https://api.korbit.co.kr/v1/ticker")
+    data = r.json()
     #baseurl = "https://blockchain.info/de/ticker"
     #result = urlopen(baseurl).read()
     #data = json.loads(result)
     #res = data["USD"]["last"]
     #r = makeWebhookResult(res)
-    res = 1
-    r = makeWebhookResult(res)
+    
+    r = makeWebhookResult(data)
 
     return r
 
 
 def makeWebhookResult(data):
-    speech = "Now bit coin currency is " + data + "!"
+    speech = "Now bit coin currency is " + data.get('last') + "!"
 
     print("Response:")
     print(speech)
